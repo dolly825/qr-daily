@@ -1,5 +1,7 @@
 name: Test Website Connection
-on: [workflow_dispatch] # 允许手动触发
+
+on:
+  workflow_dispatch   # 允许手动触发
 
 jobs:
   test-connection:
@@ -11,3 +13,9 @@ jobs:
           curl -v -L "http://www.wap.cnyiot.com/nat/pay.aspx" -o page.html
           echo "--- Response Headers ---"
           head -n 20 page.html
+
+      - name: Upload page.html
+        uses: actions/upload-artifact@v4
+        with:
+          name: page
+          path: page.html
