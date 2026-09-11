@@ -1,0 +1,37 @@
+name: test-cn-access
+
+on:
+  workflow_dispatch:
+    inputs:
+      url1:
+        description: '第一个网址'
+        required: true
+        type: string
+      url2:
+        description: '第二个网址'
+        required: true
+        type: string
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test URLs
+        env:
+          URL1: ${{ inputs.url1 }}
+          URL2: ${{ inputs.url2 }}
+        run: |
+          for url in "$URL1" "$URL2"; do
+            echo "========== $url =========="
+            curl -L -s -o /tmp/page.html \
+              -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36" \
+              --max-time 30 \
+              -w "http_code=%{http_code}\ntime_total=%{time_total}\nsize_download=%{size_download}\n" \
+              "$url" || echo "curl 失败"
+            echo "----- 页面前 500 字符 -----"
+            head -c 500 /tmp/page.html || true
+            echo
+            echo "----- 可疑关键词 -----"
+            grep -Eio "验证码|滑块|访问受限|forbidden|captcha|verify|登录|安全验证" /tmp/page.html | head -n 10 || true
+            echo
+          done
